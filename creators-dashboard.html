@@ -745,13 +745,67 @@ document.addEventListener("DOMContentLoaded",()=>{document.getElementById("l-use
 }
 
 renderDashboard();
-
-const USERS={"nacho":"mecca2025","mecca":"club2025","jhose":"cima2025"};
-const NAMES={"nacho":"Nacho","mecca":"MECCA","jhose":"Jhose"};
-function doLogin(){const u=document.getElementById("l-user").value.trim().toLowerCase(),p=document.getElementById("l-pass").value;if(USERS[u]&&USERS[u]===p){document.getElementById("login-screen").style.display="none";document.getElementById("login-welcome").textContent="Bienvenido, "+NAMES[u];}else{document.getElementById("login-err").classList.add("show");document.getElementById("l-pass").value="";}}
-document.addEventListener("DOMContentLoaded",()=>{document.getElementById("l-user").focus();});
 renderStats();
 document.getElementById("hcount").textContent=creators.length+" creadores";
+
+// LOGIN
+const USERS={"nacho":"mecca2025","mecca":"club2025","jhose":"cima2025"};
+const NAMES={"nacho":"Nacho","mecca":"MECCA","jhose":"Jhose"};
+function doLogin(){
+  const u=document.getElementById("l-user").value.trim().toLowerCase(),p=document.getElementById("l-pass").value;
+  if(USERS[u]&&USERS[u]===p){
+    document.getElementById("login-screen").style.display="none";
+    syncFromSheet();
+  }else{
+    document.getElementById("login-err").classList.add("show");
+    document.getElementById("l-pass").value="";
+  }
+}
+document.addEventListener("DOMContentLoaded",()=>{ if(document.getElementById("l-user")) document.getElementById("l-user").focus(); });
+
+// GOOGLE SHEETS SYNC
+const SHEET_ID="1I8byJ5UIRHImb2WaS_jBLxiYpnQN_voGYpdYPWz27MI";
+const SHEET_URL=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+
+async function syncFromSheet(){
+  const syncBtn=document.getElementById("sync-btn");
+  if(syncBtn){syncBtn.textContent="⏳ Sincronizando...";syncBtn.disabled=true;}
+  try{
+    const res=await fetch(SHEET_URL);
+    const text=await res.text();
+    const json=JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);/)[1]);
+    const rows=json.table.rows;
+    if(!rows||!rows.length){if(syncBtn){syncBtn.textContent="🔄 Sincronizar";syncBtn.disabled=false;}return;}
+    let nuevos=0;
+    rows.forEach(row=>{
+      const cols=row.c;
+      if(!cols||!cols[1]||!cols[1].v)return;
+      const nombre=cols[1]?.v?.toString().trim();
+      const mes=cols[2]?.v?.toString().trim();
+      const link=cols[3]?.v?.toString().trim()||"";
+      const views=parseInt(cols[4]?.v)||0;
+      const cat=cols[7]?.v?.toString().trim()||"otro";
+      const c=creators.find(x=>x.name===nombre);
+      if(!c||!mes||!views)return;
+      const exists=c.reels.some(r=>(link&&r.link===link)||(r.mes===mes&&r.views===views&&r.cat===cat));
+      if(!exists){c.reels.push({mes,cat,views,link});nuevos++;}
+    });
+    renderAll();
+    const ind=document.getElementById("sync-ind");
+    const t=new Date().toLocaleTimeString("es-AR");
+    if(ind)ind.textContent=`Sync: ${t}`;
+    if(syncBtn){syncBtn.textContent=nuevos>0?`✅ +${nuevos} reels`:"✅ Al día";syncBtn.disabled=false;setTimeout(()=>{syncBtn.textContent="🔄 Sincronizar";},3000);}
+  }catch(e){
+    console.error(e);
+    if(syncBtn){syncBtn.textContent="❌ Error";syncBtn.disabled=false;setTimeout(()=>{syncBtn.textContent="🔄 Sincronizar";},3000);}
+  }
+}
+
+// Add sync button to header
+document.querySelector(".hbtns").insertAdjacentHTML("afterbegin",`
+  <span id="sync-ind" style="font-family:'DM Mono';font-size:10px;color:var(--muted2);margin-right:4px;"></span>
+  <button id="sync-btn" class="btn btn-outline" onclick="syncFromSheet()" style="font-size:11px;">🔄 Sincronizar</button>
+`);
 </script>
 </body>
 </html>
