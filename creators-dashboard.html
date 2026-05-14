@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MECCA CREATORS — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0a0a;--surface:#111;--surface2:#181818;--surface3:#1e1e1e;--border:#222;--border2:#2a2a2a;--accent:#c8f542;--accent2:#ff5c3a;--accent3:#5c8fff;--text:#f0f0f0;--muted:#666;--muted2:#444;--golden:#f5c842;--top:#5c8fff;--base:#aaa;--cima:#c8f542;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;}
+  header{border-bottom:1px solid var(--border);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:100;background:rgba(10,10,10,.96);backdrop-filter:blur(12px);}
+  .logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;color:var(--accent);}
+  .logo span{color:var(--muted);font-size:12px;letter-spacing:2px;font-family:'DM Mono';margin-left:10px;}
+  .hbtns{display:flex;gap:8px;align-items:center;}
+  .btn{padding:7px 16px;border-radius:4px;font-family:'DM Sans';font-size:12px;font-weight:600;cursor:pointer;transition:opacity .15s;border:none;}
+  .btn-primary{background:var(--accent);color:#000;}
+  .btn-outline{background:none;border:1px solid var(--border2);color:var(--muted);}
+  .btn-outline:hover{border-color:#555;color:var(--text);}
+  .btn:hover{opacity:.85;}
+  .layout{display:flex;height:calc(100vh - 58px);}
+  .sidebar{width:210px;min-width:210px;border-right:1px solid var(--border);padding:20px 0;display:flex;flex-direction:column;gap:2px;overflow-y:auto;}
+  .slabel{font-family:'DM Mono';font-size:9px;letter-spacing:2px;color:var(--muted2);padding:10px 18px 3px;text-transform:uppercase;}
+  .nitem{display:flex;align-items:center;gap:9px;padding:8px 18px;cursor:pointer;font-size:12px;font-weight:500;border-left:2px solid transparent;transition:all .12s;color:var(--muted);}
+  .nitem:hover,.nitem.active{color:var(--text);border-left-color:var(--accent);background:rgba(200,245,66,.04);}
+  .nitem .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+  .nbadge{margin-left:auto;font-family:'DM Mono';font-size:10px;background:var(--surface2);padding:1px 6px;border-radius:3px;color:var(--muted);}
+  .content{flex:1;overflow-y:auto;padding:24px 28px;}
+  .view{display:none;}.view.active{display:block;}
+  .stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px;}
+  .scard{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:16px 18px;}
+  .scard-label{font-family:'DM Mono';font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;}
+  .scard-val{font-family:'Bebas Neue';font-size:36px;letter-spacing:1px;line-height:1;}
+  .scard-sub{font-size:10px;color:var(--muted);margin-top:3px;}
+  .filters{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
+  .finput{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:4px;font-size:12px;font-family:'DM Sans';outline:none;width:190px;}
+  .finput:focus{border-color:#444;}.finput::placeholder{color:var(--muted);}
+  .fsel{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:4px;font-size:11px;font-family:'DM Sans';cursor:pointer;outline:none;}
+  .fbtn{background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:4px;font-size:11px;font-weight:500;cursor:pointer;transition:all .12s;font-family:'DM Sans';}
+  .fbtn:hover,.fbtn.active{border-color:var(--accent);color:var(--accent);background:rgba(200,245,66,.06);}
+  .fbtn.danger.active{border-color:var(--accent2);color:var(--accent2);background:rgba(255,92,58,.06);}
+  .twrap{background:var(--surface);border:1px solid var(--border);border-radius:7px;overflow:hidden;}
+  table{width:100%;border-collapse:collapse;}
+  thead tr{border-bottom:1px solid var(--border);}
+  th{font-family:'DM Mono';font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:10px 14px;text-align:left;font-weight:400;white-space:nowrap;}
+  tbody tr{border-bottom:1px solid rgba(255,255,255,.03);transition:background .1s;cursor:pointer;}
+  tbody tr:hover{background:var(--surface2);}
+  td{padding:10px 14px;font-size:12px;vertical-align:middle;}
+  .badge{display:inline-block;padding:2px 7px;border-radius:3px;font-size:9px;font-family:'DM Mono';letter-spacing:1px;font-weight:500;text-transform:uppercase;}
+  .badge-GOLDEN{background:rgba(245,200,66,.14);color:var(--golden);}
+  .badge-TOP{background:rgba(92,143,255,.14);color:var(--top);}
+  .badge-BASE{background:rgba(170,170,170,.1);color:var(--base);}
+  .badge-CIMA{background:rgba(200,245,66,.1);color:var(--cima);}
+  .cstatus{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-family:'DM Mono';padding:2px 8px;border-radius:3px;}
+  .cstatus.ok{background:rgba(200,245,66,.08);color:var(--accent);}
+  .cstatus.warn{background:rgba(245,200,66,.08);color:var(--golden);}
+  .cstatus.breach{background:rgba(255,92,58,.1);color:var(--accent2);}
+  .cstatus.new{background:rgba(92,143,255,.08);color:var(--accent3);}
+  .cstatus.nodata{background:rgba(100,100,100,.08);color:var(--muted);}
+  .vbar{display:flex;align-items:center;gap:6px;}
+  .btrack{width:70px;height:3px;background:#1e1e1e;border-radius:2px;overflow:hidden;}
+  .bfill{height:100%;border-radius:2px;background:var(--accent);}
+  .bfill.low{background:var(--accent2);}.bfill.mid{background:var(--accent3);}
+  .vnum{font-family:'DM Mono';font-size:10px;color:var(--muted);min-width:44px;}
+  .score{font-family:'Bebas Neue';font-size:18px;letter-spacing:1px;}
+  .score.high{color:var(--accent);}.score.mid{color:var(--accent3);}.score.low{color:var(--accent2);}.score.zero{color:#333;}
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:200;align-items:center;justify-content:center;}
+  .overlay.open{display:flex;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:10px;width:780px;max-width:96vw;max-height:90vh;overflow-y:auto;padding:28px;}
+  .mhead{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;}
+  .mname{font-family:'Bebas Neue';font-size:32px;letter-spacing:2px;}
+  .xbtn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:20px;padding:4px;line-height:1;}
+  .xbtn:hover{color:var(--text);}
+  .mmeta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+  .mchip{background:var(--surface2);border:1px solid var(--border);padding:3px 10px;border-radius:4px;font-size:10px;font-family:'DM Mono';color:var(--muted);}
+  .mchip a{color:inherit;text-decoration:none;}.mchip a:hover{color:var(--accent);}
+  .msec{font-family:'DM Mono';font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:14px;margin-top:20px;}
+  .rgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+  .rcard{background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:12px;}
+  .rmonth{font-family:'DM Mono';font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:4px;}
+  .rviews{font-family:'Bebas Neue';font-size:26px;color:var(--accent);}
+  .rcat{font-size:10px;color:var(--muted);margin:2px 0 6px;}
+  .rlink{color:var(--muted);font-size:10px;text-decoration:none;word-break:break-all;}.rlink:hover{color:var(--accent);}
+  .dbox{border:1px solid var(--border);border-radius:6px;padding:14px;margin-bottom:14px;}
+  .dbox.fire{border-color:var(--accent);background:rgba(200,245,66,.03);}
+  .dbox.warn{border-color:var(--golden);background:rgba(245,200,66,.03);}
+  .dbox.breach{border-color:var(--accent2);background:rgba(255,92,58,.04);}
+  .dbox.ok{border-color:var(--accent3);background:rgba(92,143,255,.03);}
+  .dlabel{font-family:'Bebas Neue';font-size:16px;letter-spacing:2px;margin-bottom:3px;}
+  .fulog{display:flex;flex-direction:column;gap:8px;}
+  .fuentry{background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:10px 14px;display:flex;align-items:flex-start;gap:12px;}
+  .fudate{font-family:'DM Mono';font-size:10px;color:var(--muted);min-width:80px;margin-top:1px;}
+  .futag{font-size:9px;font-family:'DM Mono';padding:1px 6px;border-radius:3px;margin-left:4px;}
+  .futag.aviso{background:rgba(245,200,66,.12);color:var(--golden);}
+  .futag.urgente{background:rgba(255,92,58,.12);color:var(--accent2);}
+  .futag.positivo{background:rgba(200,245,66,.12);color:var(--accent);}
+  .futag.info{background:rgba(92,143,255,.12);color:var(--accent3);}
+  .frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+  .fgroup{display:flex;flex-direction:column;gap:5px;}
+  .fgroup.full{grid-column:span 2;}
+  label{font-family:'DM Mono';font-size:9px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;}
+  input,select,textarea{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:4px;font-size:12px;font-family:'DM Sans';outline:none;transition:border-color .12s;width:100%;}
+  input:focus,select:focus,textarea:focus{border-color:#444;}
+  textarea{resize:vertical;min-height:80px;}
+  .tmpl-box{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:16px;font-size:12px;line-height:1.8;white-space:pre-wrap;font-family:'DM Mono';color:var(--text);position:relative;}
+  .copy-btn{position:absolute;top:10px;right:10px;background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:3px;font-size:10px;cursor:pointer;font-family:'DM Sans';}
+  .copy-btn:hover{color:var(--accent);border-color:var(--accent);}
+  .rgrd{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px;}
+  .rkcard{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:16px;position:relative;overflow:hidden;cursor:pointer;transition:border-color .15s;}
+  .rkcard:hover{border-color:#333;}
+  .rknm{font-family:'Bebas Neue';font-size:52px;color:rgba(255,255,255,.04);position:absolute;top:-6px;right:8px;line-height:1;}
+  .ptabs{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;}
+  .ptab{padding:6px 14px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--border);color:var(--muted);transition:all .12s;}
+  .ptab.active{background:var(--accent);color:#000;border-color:var(--accent);}
+  .alert-banner{border-radius:6px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;font-size:12px;}
+  .alert-banner.breach{background:rgba(255,92,58,.08);border:1px solid rgba(255,92,58,.2);}
+  .alert-banner.warn{background:rgba(245,200,66,.06);border:1px solid rgba(245,200,66,.2);}
+  .alert-banner.ok{background:rgba(200,245,66,.05);border:1px solid rgba(200,245,66,.2);}
+  .mpill{padding:4px 12px;border-radius:20px;font-size:11px;font-family:'DM Mono';cursor:pointer;border:1px solid var(--border);color:var(--muted);}
+  .mpill.active{border-color:var(--accent);color:var(--accent);}
+  .cinfo-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
+  .cinfocard{background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:10px 12px;}
+  .cinfolabel{font-family:'DM Mono';font-size:9px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:4px;}
+  .dtable{width:100%;font-size:12px;border-collapse:collapse;}
+  .dtable td,.dtable th{padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.04);}
+  .dtable th{font-family:'DM Mono';font-size:9px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;text-align:left;}
+  #login-screen{position:fixed;inset:0;background:#0a0a0a;z-index:9999;display:flex;align-items:center;justify-content:center;}
+  .login-box{background:#111;border:1px solid #222;border-radius:12px;padding:40px 36px;width:340px;max-width:92vw;}
+  .login-logo{font-family:"Bebas Neue",sans-serif;font-size:34px;letter-spacing:4px;color:#c8f542;text-align:center;margin-bottom:4px;}
+  .login-sub{font-size:11px;color:#666;letter-spacing:2px;text-align:center;margin-bottom:32px;font-family:"DM Mono";}
+  .login-group{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+  .login-label{font-size:9px;font-family:"DM Mono";letter-spacing:1.5px;text-transform:uppercase;color:#555;}
+  .login-input{background:#181818;border:1px solid #222;color:#f0f0f0;padding:12px 14px;border-radius:6px;font-size:14px;font-family:"DM Sans";outline:none;width:100%;transition:border-color .15s;}
+  .login-input:focus{border-color:#c8f542;}
+  .login-btn{width:100%;padding:13px;background:#c8f542;color:#000;border:none;border-radius:6px;font-family:"DM Sans";font-size:14px;font-weight:700;cursor:pointer;margin-top:8px;}
+  .login-btn:hover{opacity:.9;}
+  .login-err{background:rgba(255,92,58,.08);border:1px solid rgba(255,92,58,.2);color:#ff5c3a;padding:9px 12px;border-radius:5px;font-size:12px;text-align:center;display:none;margin-top:10px;}
+  .login-err.show{display:block;}
+  @media(max-width:900px){.stats-row{grid-template-columns:1fr 1fr}.sidebar{display:none}.rgrid{grid-template-columns:1fr 1fr}.rgrd{grid-template-columns:1fr 1fr}.cinfo-row{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+<div class="login-box">
+<div class="login-logo">MECCA</div>
+<div class="login-sub">CREATORS DASHBOARD</div>
+<div class="login-group"><label class="login-label">Usuario</label><input class="login-input" id="l-user" type="text" placeholder="tu usuario" autocomplete="username"></div>
+<div class="login-group"><label class="login-label">Contraseña</label><input class="login-input" id="l-pass" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+<button class="login-btn" onclick="doLogin()">Entrar →</button>
+<div class="login-err" id="login-err">Usuario o contraseña incorrectos.</div>
+<div class="login-user" id="login-welcome"></div>
+</div>
+</div>
+<header>
+  <div class="logo">MECCA <span>CREATORS</span></div>
+  <div class="hbtns">
+    <span style="font-family:'DM Mono';font-size:11px;color:var(--muted);" id="hcount"></span>
+    <button class="btn btn-outline" onclick="openTemplate()">📋 Plantillas</button>
+    <button class="btn btn-primary" onclick="openAddReel()">+ Cargar Reel</button>
+  </div>
+</header>
+<div class="layout">
+  <nav class="sidebar">
+    <div class="slabel">Vistas</div>
+    <div class="nitem active" data-view="dashboard" onclick="nav(this)"><div class="dot" style="background:var(--accent)"></div>Dashboard</div>
+    <div class="nitem" data-view="creators" onclick="nav(this)"><div class="dot" style="background:var(--accent3)"></div>Creadores</div>
+    <div class="nitem" data-view="contrato" onclick="nav(this)"><div class="dot" style="background:var(--golden)"></div>Contrato <span class="nbadge" id="nb-breach">0</span></div>
+    <div class="nitem" data-view="seguimiento" onclick="nav(this)"><div class="dot" style="background:var(--top)"></div>Seguimiento</div>
+    <div class="nitem" data-view="decisiones" onclick="nav(this)"><div class="dot" style="background:var(--accent2)"></div>Decisiones <span class="nbadge" id="nb-dec">0</span></div>
+    <div class="nitem" data-view="ranking" onclick="nav(this)"><div class="dot" style="background:var(--base)"></div>Ranking</div>
+    <div class="slabel" style="margin-top:14px;">Tier</div>
+    <div class="nitem" onclick="setTier('ALL',this)"><div class="dot" style="background:#555"></div>Todos</div>
+    <div class="nitem" onclick="setTier('GOLDEN',this)"><div class="dot" style="background:var(--golden)"></div>Golden</div>
+    <div class="nitem" onclick="setTier('TOP',this)"><div class="dot" style="background:var(--top)"></div>Top</div>
+    <div class="nitem" onclick="setTier('BASE',this)"><div class="dot" style="background:var(--base)"></div>Base</div>
+    <div class="nitem" onclick="setTier('TEAM CIMA',this)"><div class="dot" style="background:var(--cima)"></div>Team Cima</div>
+    <div class="slabel" style="margin-top:14px;">Sede</div>
+    <div class="nitem" onclick="setSede('ALL',this)"><div class="dot" style="background:#555"></div>Todas</div>
+    <div class="nitem" onclick="setSede('Almagro',this)"><div class="dot" style="background:#888"></div>Almagro</div>
+    <div class="nitem" onclick="setSede('Congreso',this)"><div class="dot" style="background:#888"></div>Congreso</div>
+    <div class="nitem" onclick="setSede('Recoleta',this)"><div class="dot" style="background:#888"></div>Recoleta</div>
+    <div class="nitem" onclick="setSede('Ituzaingó',this)"><div class="dot" style="background:#888"></div>Ituzaingó</div>
+  </nav>
+  <main class="content">
+    <div id="view-dashboard" class="view active">
+      <div class="stats-row" id="stats-row"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;">
+        <div><div class="msec" style="margin-top:0">🔥 Top Views</div><div id="dash-top"></div></div>
+        <div><div class="msec" style="margin-top:0">⚠️ Incumplimiento</div><div id="dash-breach"></div></div>
+        <div><div class="msec" style="margin-top:0">📅 Sin seguimiento reciente</div><div id="dash-followup"></div></div>
+      </div>
+    </div>
+    <div id="view-creators" class="view">
+      <div class="filters">
+        <input class="finput" type="text" placeholder="Buscar..." id="srch" oninput="renderTable()">
+        <select class="fsel" id="sort" onchange="renderTable()">
+          <option value="views_desc">↓ Views</option>
+          <option value="views_asc">↑ Views</option>
+          <option value="name_asc">A→Z</option>
+          <option value="reels_desc">↓ Reels</option>
+          <option value="inicio_asc">↑ Fecha inicio</option>
+        </select>
+        <button class="fbtn" id="fb-breach" onclick="toggleFilter('breach')">⚠️ Solo incumplimiento</button>
+        <button class="fbtn" id="fb-nofu" onclick="toggleFilter('nofu')">📭 Sin seguimiento +14d</button>
+      </div>
+      <div class="twrap"><table>
+        <thead><tr><th>#</th><th>Creador</th><th>Tier</th><th>Sede</th><th>Inicio</th><th>Contrato</th><th>Último FU</th><th>Views Total</th><th>Avg/Reel</th><th>IG</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table></div>
+    </div>
+    <div id="view-contrato" class="view">
+      <div style="font-family:'Bebas Neue';font-size:26px;letter-spacing:2px;margin-bottom:4px;">Estado de Contratos</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:18px;">BASE = 2 reels/mes · TOP/GOLDEN = 1 reel/mes · TEAM CIMA = sin requisito</div>
+      <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;" id="contrato-pills"></div>
+      <div id="contrato-body"></div>
+    </div>
+    <div id="view-seguimiento" class="view">
+      <div style="font-family:'Bebas Neue';font-size:26px;letter-spacing:2px;margin-bottom:16px;">Historial de Seguimiento</div>
+      <div class="filters" style="margin-bottom:16px;">
+        <input class="finput" type="text" placeholder="Buscar creador..." id="fu-srch" oninput="renderSeguimiento()">
+        <select class="fsel" id="fu-filter" onchange="renderSeguimiento()">
+          <option value="ALL">Todos</option><option value="aviso">Aviso</option><option value="urgente">Urgente</option><option value="positivo">Positivo</option><option value="info">Info</option>
+        </select>
+        <button class="btn btn-outline" style="font-size:11px;" onclick="openAddFollowup(null)">+ Registrar</button>
+      </div>
+      <div id="seguimiento-body"></div>
+    </div>
+    <div id="view-decisiones" class="view">
+      <div style="font-family:'Bebas Neue';font-size:26px;letter-spacing:2px;margin-bottom:4px;">Centro de Decisiones</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:20px;">Basado en cumplimiento contractual (2 reels/mes BASE, 1 TOP/GOLDEN).</div>
+      <div id="decisiones-body"></div>
+    </div>
+    <div id="view-ranking" class="view">
+      <div class="msec" style="margin-top:0">Top 9 por Views Totales</div>
+      <div class="rgrd" id="rkgrid"></div>
+      <div class="msec">Por Tier</div>
+      <div id="tier-breakdown"></div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL CREADOR -->
+<div class="overlay" id="modal-overlay" onclick="closeOverlay(event,'modal-overlay')">
+  <div class="modal" id="modal-body"></div>
+</div>
+
+<!-- MODAL ADD REEL -->
+<div class="overlay" id="reel-overlay" onclick="closeOverlay(event,'reel-overlay')">
+  <div class="modal" style="width:520px;">
+    <div class="mhead"><div class="mname" style="font-size:22px;">Cargar Reel</div><button class="xbtn" onclick="close1('reel-overlay')">✕</button></div>
+    <div class="frow">
+      <div class="fgroup"><label>Creador</label><select id="rc-creator"></select></div>
+      <div class="fgroup"><label>Mes</label><select id="rc-month"><option>Marzo</option><option>Abril</option><option selected>Mayo</option><option>Junio</option><option>Julio</option></select></div>
+    </div>
+    <div class="frow">
+      <div class="fgroup"><label>Link del Reel</label><input type="url" id="rc-link" placeholder="https://instagram.com/reel/..."></div>
+      <div class="fgroup"><label>Views</label><input type="number" id="rc-views" placeholder="ej: 15000"></div>
+    </div>
+    <div class="frow">
+      <div class="fgroup"><label>Categoría</label>
+        <select id="rc-cat"><option>entrenamiento</option><option>entrenam + cafe</option><option>entrenam + spa</option><option>spa</option><option>clases</option><option>vlog</option><option>trend</option><option>humor / comedia</option><option>instalaciones</option><option>experiencia gym</option><option>otro</option></select>
+      </div>
+      <div class="fgroup" style="justify-content:flex-end;padding-top:18px;"><button class="btn btn-primary" style="height:36px;" onclick="submitReel()">Guardar</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FOLLOW UP -->
+<div class="overlay" id="fu-overlay" onclick="closeOverlay(event,'fu-overlay')">
+  <div class="modal" style="width:520px;">
+    <div class="mhead"><div class="mname" style="font-size:22px;">Registrar Seguimiento</div><button class="xbtn" onclick="close1('fu-overlay')">✕</button></div>
+    <div class="frow">
+      <div class="fgroup"><label>Creador</label><select id="fu-creator"></select></div>
+      <div class="fgroup"><label>Tipo</label>
+        <select id="fu-tipo"><option value="aviso">⚠️ Aviso</option><option value="urgente">🚨 Urgente / Último aviso</option><option value="positivo">✅ Feedback positivo</option><option value="info">📋 Info / Logística</option></select>
+      </div>
+    </div>
+    <div class="frow">
+      <div class="fgroup full"><label>Nota</label><textarea id="fu-nota" placeholder="Qué le dijiste / qué respondió..."></textarea></div>
+    </div>
+    <div class="frow">
+      <div class="fgroup"><label>Fecha</label><input type="date" id="fu-fecha"></div>
+      <div class="fgroup" style="justify-content:flex-end;padding-top:18px;"><button class="btn btn-primary" style="height:36px;" onclick="submitFollowup()">Guardar</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TEMPLATE -->
+<div class="overlay" id="tmpl-overlay" onclick="closeOverlay(event,'tmpl-overlay')">
+  <div class="modal" style="width:640px;">
+    <div class="mhead"><div class="mname" style="font-size:22px;">📋 Plantillas de Mensajes</div><button class="xbtn" onclick="close1('tmpl-overlay')">✕</button></div>
+    <div class="ptabs" id="tmpl-tabs"></div>
+    <div id="tmpl-body"></div>
+  </div>
+</div>
+
+<script>
+const MESES_ORDER=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+const MES_ACTUAL="Mayo";
+
+let creators=[
+  {name:"Laura Pace",tier:"TOP",sede:"Congreso y Almagro",mail:"Mlaurapace2000@hotmail.com",ig:"https://www.instagram.com/lauu_pace",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"entrenamiento",views:41000,link:"https://www.instagram.com/reel/DUg6Wr3AJx8/"},{mes:"Marzo",cat:"entrenamiento",views:11000,link:""},{mes:"Abril",cat:"entrenam + cafe",views:5600,link:"https://www.instagram.com/reel/DX2qYioiIkI/"}],eventos:"",contenido:"https://drive.google.com/drive/folders/1IOgn4trt-ltm00U8rDqNYg-3ltLeH1_D",seguimientos:[]},
+  {name:"Delfina Bella",tier:"TOP",sede:"Congreso/Almagro",mail:"delfi.bella.18@gmail.com",ig:"https://www.instagram.com/delfi_bella/",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"entrenamiento",views:3500,link:""},{mes:"Abril",cat:"entrenamiento",views:2500,link:""},{mes:"Abril",cat:"trend",views:19600,link:"https://www.instagram.com/reel/DXIbTPviYJ4/"}],eventos:"CARRERA ITUZAINGO",contenido:"",seguimientos:[]},
+  {name:"Francisco Ojeda",tier:"TOP",sede:"Almagro",mail:"franciscomojeda1999@gmail.com",ig:"https://www.instagram.com/franciscoojeda.pf",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"entrenam + cafe",views:6400,link:""},{mes:"Abril",cat:"entrenamiento",views:3500,link:""}],eventos:"",contenido:"https://drive.google.com/drive/folders/18kTf3dqio3DRAWxqFxLkYRRsxpNhbUXY",seguimientos:[]},
+  {name:"Ayelen Belayos",tier:"TOP",sede:"Recoleta",mail:"Ayee.velayos@gmail.com",ig:"https://www.instagram.com/ayevelayos/",inicio:"2025-04-01",reels:[{mes:"Abril",cat:"entrenamiento",views:3522,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Nicolás Barreto",tier:"TOP",sede:"Congreso",mail:"ng-fotografias@hotmail.com",ig:"https://www.instagram.com/nicogaabriel",inicio:"2025-05-01",reels:[{mes:"Mayo",cat:"Experiencia gym + spa",views:12700,link:"https://www.instagram.com/reel/DYIGO-XhCVl/"}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Abril Espoille",tier:"TOP",sede:"Almagro",mail:"abril.espoille@gmail.com",ig:"https://www.instagram.com/abrilespoille/",inicio:"2025-03-01",reels:[],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Ana Paula Carballo",tier:"TOP",sede:"Almagro",mail:"anapaulacarballok7@gmail.com",ig:"https://www.instagram.com/anapaulacarballo7",inicio:"2025-04-01",reels:[{mes:"Abril",cat:"entrenamiento",views:16000,link:""},{mes:"Abril",cat:"baile",views:12000,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Samanta Herdt",tier:"TOP",sede:"Almagro",mail:"samyh_29@hotmail.com",ig:"https://www.instagram.com/samantaherdt",inicio:"2025-04-15",reels:[],eventos:"empezó el 15/4",contenido:"",seguimientos:[]},
+  {name:"Melannie Martinez",tier:"TOP",sede:"Almagro",mail:"Melaamartinez16@gmail.com",ig:"https://www.instagram.com/melaamartinez__",inicio:"2025-04-17",reels:[],eventos:"empezó el 17/4",contenido:"",seguimientos:[]},
+  {name:"Amorina Alday",tier:"TOP",sede:"Recoleta",mail:"amorinaalday@gmail.com",ig:"https://www.instagram.com/amorinaalday/",inicio:"2025-04-21",reels:[],eventos:"empezó el 21/4",contenido:"",seguimientos:[]},
+  {name:"Agostina Romello",tier:"TOP",sede:"Almagro/Recoleta",mail:"agostinaromello01@gmail.com",ig:"https://www.instagram.com/agosromello",inicio:"2025-04-27",reels:[],eventos:"empezó el 27/4",contenido:"",seguimientos:[]},
+  {name:"Santiago Larrivey",tier:"TOP",sede:"Recoleta",mail:"Batilarri@gmail.com",ig:"https://www.instagram.com/bati.larrivey",inicio:"2025-04-28",reels:[],eventos:"empezó el 28/4",contenido:"",seguimientos:[]},
+  {name:"Agustina Di Grigoli",tier:"TOP",sede:"Almagro",mail:"Maylendigri@gmail.com",ig:"https://www.instagram.com/agusdigri_",inicio:"2025-04-28",reels:[],eventos:"empezó el 28/4",contenido:"",seguimientos:[]},
+  {name:"Lourdes Ciccarone",tier:"TOP",sede:"Almagro",mail:"Ciccaronelourdes@gmail.com",ig:"https://www.instagram.com/luluciccarone",inicio:"2025-04-28",reels:[],eventos:"empezó el 28/4",contenido:"",seguimientos:[]},
+  {name:"Luciano Yael",tier:"TOP",sede:"Almagro",mail:"luciano.yael@hotmail.com",ig:"https://www.instagram.com/lucianoyael",inicio:"2025-05-01",reels:[],eventos:"empezó en mayo",contenido:"",seguimientos:[]},
+  {name:"Joaquina Dacal",tier:"TOP",sede:"Recoleta",mail:"joaquinadacal10@gmail.com",ig:"https://www.instagram.com/joaquinadacal/",inicio:"2025-05-01",reels:[],eventos:"empezó en mayo",contenido:"",seguimientos:[]},
+  {name:"Delfina Torres Susseret",tier:"TOP",sede:"Recoleta",mail:"delfinatorressusseret@gmail.com",ig:"https://www.instagram.com/delfitorres.s/",inicio:"2025-05-01",reels:[],eventos:"empezó en mayo",contenido:"",seguimientos:[]},
+  {name:"Lucas Contardi",tier:"TOP",sede:"Congreso",mail:"contardilucas2000@gmail.com",ig:"https://www.instagram.com/lucasccontardi",inicio:"2025-03-01",reels:[],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Julieta Paez",tier:"GOLDEN",sede:"Almagro/Congreso",mail:"julietabelenpaez@hotmail.com",ig:"https://www.instagram.com/juju.paez/",inicio:"2025-04-01",reels:[{mes:"Abril",cat:"vlog",views:44900,link:"https://www.instagram.com/reel/DXfvSbxjbWc/"}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Valentina Legaria",tier:"GOLDEN",sede:"",mail:"valennlegaria@gmail.com",ig:"https://www.instagram.com/valentinalegaria/",inicio:"2025-04-01",reels:[{mes:"Abril",cat:"entrenamiento",views:3460,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Sofia Fernandez",tier:"GOLDEN",sede:"Almagro",mail:"sofifernandezinfo@gmail.com",ig:"https://www.instagram.com/sofifernandez/",inicio:"2025-04-20",reels:[],eventos:"empezó 20/4",contenido:"",seguimientos:[]},
+  {name:"German Gomez",tier:"GOLDEN",sede:"Almagro",mail:"gomezger3@gmail.com",ig:"https://www.instagram.com/gergomez1",inicio:"2025-04-20",reels:[],eventos:"empezó 20/4",contenido:"",seguimientos:[]},
+  {name:"Federica Riccio",tier:"GOLDEN",sede:"Almagro",mail:"federikita@icloud.com",ig:"https://www.instagram.com/kitarealg/",inicio:"2025-05-01",reels:[],eventos:"empezó en mayo",contenido:"",seguimientos:[]},
+  {name:"Canela Devoto",tier:"GOLDEN",sede:"Almagro",mail:"canedevoto@gmail.com",ig:"https://www.instagram.com/canedevoto",inicio:"2025-05-01",reels:[],eventos:"empezó en mayo",contenido:"",seguimientos:[]},
+  {name:"Julieta Herrera",tier:"GOLDEN",sede:"",mail:"julietaherrera2116@gmail.com",ig:"https://www.instagram.com/julietaaherrera_",inicio:"2025-05-01",reels:[],eventos:"empezó en mayo",contenido:"",seguimientos:[]},
+  {name:"Lionel Ferro",tier:"GOLDEN",sede:"Recoleta",mail:"",ig:"",inicio:"2025-05-01",reels:[],eventos:"empezó en mayo",contenido:"",seguimientos:[]},
+  {name:"Morena Porto",tier:"BASE",sede:"Almagro",mail:"Moredelcas@gmail.com",ig:"https://www.instagram.com/moreportoo/",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"entrenamiento",views:5183,link:""},{mes:"Marzo",cat:"entrenam + cafe",views:3088,link:""},{mes:"Abril",cat:"entrenamiento",views:11200,link:""},{mes:"Abril",cat:"entrenamiento",views:337000,link:"https://www.instagram.com/reel/DXRrkxiAARC/"}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Sheila Rodríguez",tier:"BASE",sede:"Almagro",mail:"sheirodriguez1910@gmail.com",ig:"https://www.instagram.com/sheirodriguez_",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"entrenamiento",views:22000,link:""},{mes:"Marzo",cat:"entrenam + cafe",views:2200,link:""},{mes:"Abril",cat:"entrenam + cafe",views:13000,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Facundo Aguirre",tier:"BASE",sede:"Congreso y Almagro",mail:"facumati78@gmail.com",ig:"https://www.instagram.com/facuaguirre28",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"spa",views:3800,link:""},{mes:"Marzo",cat:"cafe",views:4065,link:""},{mes:"Abril",cat:"entrenamiento",views:4200,link:""},{mes:"Abril",cat:"comedia",views:26000,link:""}],eventos:"APERTURA MATANZA",contenido:"",seguimientos:[]},
+  {name:"Fiorella Scarfó",tier:"BASE",sede:"Almagro",mail:"scarfofiorella2@gmail.com",ig:"https://www.instagram.com/fiorellascarfo/",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"entrenamiento",views:5420,link:""},{mes:"Marzo",cat:"entrenamiento",views:7650,link:""},{mes:"Abril",cat:"entrenamiento",views:3461,link:""},{mes:"Abril",cat:"entrenamiento",views:6997,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Johsnely Alvarez",tier:"BASE",sede:"Almagro",mail:"nelyalvarezq@gmail.com",ig:"https://www.instagram.com/nely_alvarez/",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"entrenamiento",views:1215,link:""},{mes:"Marzo",cat:"entrenam + cafe",views:1147,link:""},{mes:"Abril",cat:"cafe",views:4695,link:""},{mes:"Abril",cat:"entrenamiento",views:36000,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Yasmin Chiarelli",tier:"BASE",sede:"Almagro",mail:"Yasminchiarelli@hotmail.com",ig:"https://www.instagram.com/igriega.cehache",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"entrenam + cafe",views:2007,link:""},{mes:"Marzo",cat:"entrenamiento",views:1661,link:""},{mes:"Abril",cat:"entrenam + cafe",views:5204,link:""},{mes:"Abril",cat:"entrenam + cafe",views:100,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Joaquin Veron",tier:"BASE",sede:"Congreso",mail:"Joacoveron97@gmail.com",ig:"https://www.instagram.com/joaacoveron/",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"entrenamiento",views:2629,link:""},{mes:"Marzo",cat:"entrenamiento",views:2722,link:""},{mes:"Abril",cat:"entrenamiento",views:2824,link:""},{mes:"Abril",cat:"entrenamiento",views:2400,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Anny Castro",tier:"BASE",sede:"Congreso y Almagro",mail:"Annyflo97@gmail.com",ig:"https://www.instagram.com/annyfloriana",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"entrenam + cafe",views:2301,link:""},{mes:"Marzo",cat:"entrenamiento",views:5505,link:""},{mes:"Abril",cat:"entrenamiento",views:1974,link:""},{mes:"Abril",cat:"entrenamiento",views:4942,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Lima Soul Khallouf",tier:"BASE",sede:"Almagro",mail:"limasoulkhallouf@gmail.com",ig:"https://www.instagram.com/lima_soul/",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"entrenam + cafe",views:1002,link:""},{mes:"Marzo",cat:"entrenamiento",views:3154,link:""},{mes:"Abril",cat:"entrenam + cafe",views:1001,link:""},{mes:"Abril",cat:"entrenamiento",views:1450,link:""},{mes:"Mayo",cat:"entrenam + cafe",views:1041,link:""},{mes:"Mayo",cat:"entrenamiento",views:1372,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Nicolly Flores",tier:"BASE",sede:"Almagro",mail:"nicmfloress@gmail.com",ig:"https://www.instagram.com/nicmflores_/",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"entrenam + cafe",views:1962,link:""},{mes:"Marzo",cat:"entrenamiento",views:4062,link:""},{mes:"Abril",cat:"entrenamiento",views:2794,link:""}],eventos:"CARRERA ITUZAINGO",contenido:"",seguimientos:[]},
+  {name:"Cielo Zambrano",tier:"BASE",sede:"Congreso",mail:"Cielozambrano3105@gmail.com",ig:"https://www.instagram.com/cielozambrano1",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"entrenamiento",views:2012,link:""},{mes:"Marzo",cat:"spa",views:2774,link:""},{mes:"Abril",cat:"entrenamiento",views:4600,link:""},{mes:"Abril",cat:"spa",views:1783,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Hernán Garro",tier:"BASE",sede:"Congreso y Almagro",mail:"garrohernannicolas@gmail.com",ig:"https://www.instagram.com/garrohernann.fit",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"entrenamiento",views:2516,link:""},{mes:"Marzo",cat:"entrenam + spa",views:3246,link:""},{mes:"Abril",cat:"entrenamiento",views:2528,link:""}],eventos:"CARRERA ITUZAINGO",contenido:"",seguimientos:[]},
+  {name:"Gabriela Calle Paba",tier:"BASE",sede:"Almagro",mail:"Gaby57ecp@gmail.com",ig:"https://www.instagram.com/gabycallep",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"entrenamiento",views:2717,link:""},{mes:"Marzo",cat:"entrenam + cafe",views:4620,link:""},{mes:"Abril",cat:"entrenamiento",views:1572,link:""},{mes:"Abril",cat:"entrenamiento",views:4272,link:""}],eventos:"CARRERA ITUZAINGO",contenido:"",seguimientos:[]},
+  {name:"Camila Talarico",tier:"BASE",sede:"Ituzaingó",mail:"camilatalarico511@gmail.com",ig:"https://www.instagram.com/cami_talarico/",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"entrenamiento",views:2900,link:""},{mes:"Marzo",cat:"clases",views:2728,link:""},{mes:"Abril",cat:"clases",views:1729,link:""},{mes:"Abril",cat:"humor",views:2161,link:""}],eventos:"APERTURA MATANZA",contenido:"",seguimientos:[]},
+  {name:"Lautaro Guillin",tier:"BASE",sede:"Congreso",mail:"lautygguillin@gmail.com",ig:"https://www.instagram.com/lauty.lifts",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"entrenam + spa",views:3422,link:""},{mes:"Marzo",cat:"entrenam + spa",views:2434,link:""},{mes:"Abril",cat:"entrenamiento",views:2386,link:""},{mes:"Abril",cat:"entrenamiento",views:400,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Milagros Roperto",tier:"BASE",sede:"Congreso",mail:"ropertomilagros@gmail.com",ig:"https://www.instagram.com/millie.roperto",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"entrenamiento",views:3044,link:""},{mes:"Marzo",cat:"spa",views:3333,link:""},{mes:"Abril",cat:"entrenamiento",views:3692,link:""},{mes:"Abril",cat:"entrenamiento",views:4547,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Lucas Martinez",tier:"BASE",sede:"Almagro",mail:"Martínezlucas2409@gmail.com",ig:"https://www.instagram.com/luquitasfit/",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"entrenamiento",views:3138,link:""},{mes:"Marzo",cat:"entrenam + cafe",views:2570,link:""},{mes:"Abril",cat:"entrenam + cafe",views:3895,link:""},{mes:"Abril",cat:"entrenamiento",views:5505,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Victoria Del Val",tier:"BASE",sede:"Almagro",mail:"Delvalvictoria59@gmail.com",ig:"https://www.instagram.com/victoriadelvalfitness",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"entrenam + cafe",views:3251,link:""},{mes:"Marzo",cat:"entrenamiento",views:2131,link:""},{mes:"Abril",cat:"entrenamiento",views:14000,link:""},{mes:"Abril",cat:"entrenamiento",views:11000,link:""}],eventos:"CARRERA ITUZAINGO",contenido:"",seguimientos:[]},
+  {name:"Sofie Manfredotti",tier:"BASE",sede:"Almagro",mail:"Somanfredotii@gmail.com",ig:"https://www.instagram.com/sofi.manfree/",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"entrenamiento",views:4220,link:""},{mes:"Marzo",cat:"entrenam + cafe",views:5968,link:""},{mes:"Abril",cat:"entrenamiento",views:13000,link:""},{mes:"Abril",cat:"entrenamiento",views:2691,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Arantza Yauli",tier:"BASE",sede:"Congreso/Almagro",mail:"arantzabrigitte96@gmail.com",ig:"https://www.instagram.com/tatayauli",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"entrenamiento",views:5331,link:""},{mes:"Marzo",cat:"entrenamiento",views:22000,link:""},{mes:"Abril",cat:"entrenam + cafe",views:1814,link:""},{mes:"Abril",cat:"entrenamiento",views:21000,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Daniela Molina",tier:"BASE",sede:"Congreso",mail:"daniela.molina.sd@gmail.com",ig:"https://www.instagram.com/danielamoliina",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"entrenamiento",views:6593,link:""},{mes:"Marzo",cat:"spa",views:8112,link:""},{mes:"Abril",cat:"entrenamiento",views:3600,link:""},{mes:"Abril",cat:"spa",views:5253,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Micaela Bianchimano",tier:"BASE",sede:"Almagro",mail:"Maikiifit@gmail.com",ig:"https://www.instagram.com/maikiifit",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"entrenam + cafe",views:9419,link:""},{mes:"Marzo",cat:"clases + cafe",views:7027,link:""},{mes:"Abril",cat:"entrenamiento",views:100,link:""},{mes:"Abril",cat:"entrenamiento",views:5571,link:""},{mes:"Mayo",cat:"entrenam + cafe",views:2675,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Julieta Gordon",tier:"BASE",sede:"Almagro",mail:"je.gordon95@gmail.com",ig:"https://www.instagram.com/julietagordon",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"entrenamiento",views:3946,link:""},{mes:"Marzo",cat:"entrenam + cafe",views:2381,link:""},{mes:"Abril",cat:"clases",views:3627,link:""},{mes:"Abril",cat:"entrenam + cafe",views:2392,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Victoria Rodríguez",tier:"BASE",sede:"Ituzaingó",mail:"vickyxrodriguez00@gmail.com",ig:"https://www.instagram.com/vvictoriarodriguez",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"entrenamiento",views:3500,link:""},{mes:"Marzo",cat:"entrenamiento",views:1600,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Valentina Lettieri",tier:"BASE",sede:"Ituzaingó",mail:"Valen_lettieri@hotmail.com",ig:"https://www.instagram.com/valenlett",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"clases",views:5634,link:""},{mes:"Marzo",cat:"entrenamiento",views:5730,link:""},{mes:"Abril",cat:"humor",views:7400,link:""},{mes:"Abril",cat:"entrenamiento",views:4510,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Tamara Coma",tier:"BASE",sede:"Congreso",mail:"tamara.coma@outlook.com",ig:"https://www.instagram.com/tamicoma",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"entrenamiento",views:3157,link:""},{mes:"Marzo",cat:"spa",views:3500,link:""},{mes:"Abril",cat:"entrenam + cafe",views:4017,link:""},{mes:"Abril",cat:"entrenamiento",views:4270,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Camila Pérez Pérsico",tier:"BASE",sede:"Congreso",mail:"camilappersico@gmail.com",ig:"https://www.instagram.com/camilapersico_/",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"entrenamiento",views:4196,link:""},{mes:"Marzo",cat:"spa",views:1990,link:""},{mes:"Abril",cat:"entrenamiento",views:1800,link:""},{mes:"Abril",cat:"spa",views:1287,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Sofia Ballato",tier:"BASE",sede:"Almagro",mail:"sofi.ballato@hotmail.com",ig:"https://www.instagram.com/sofiballato/",inicio:"2025-04-01",reels:[{mes:"Abril",cat:"entrenamiento",views:5100,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Paola Depersia",tier:"BASE",sede:"Congreso",mail:"Paoo.d@hotmail.com",ig:"https://www.instagram.com/paodepersia",inicio:"2025-04-01",reels:[{mes:"Abril",cat:"entrenamiento",views:5667,link:""},{mes:"Abril",cat:"entrenamiento",views:12000,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Habsi Dip",tier:"BASE",sede:"Ituzaingó",mail:"habsidip@hotmail.com",ig:"https://www.instagram.com/habsidip",inicio:"2025-04-01",reels:[{mes:"Abril",cat:"clases",views:3370,link:""},{mes:"Abril",cat:"entrenamiento",views:2558,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Sebastian Angelone",tier:"BASE",sede:"Almagro",mail:"Sebastianjoelangelone@gmail.com",ig:"https://www.instagram.com/seba_angelone",inicio:"2025-04-01",reels:[{mes:"Abril",cat:"entrenamiento",views:3966,link:""},{mes:"Abril",cat:"entrenamiento",views:2264,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Julia Vega",tier:"BASE",sede:"Almagro",mail:"Juliavega088@gmail.com",ig:"https://www.instagram.com/juliveg_",inicio:"2025-04-01",reels:[{mes:"Abril",cat:"entrenam + cafe",views:1347,link:""},{mes:"Abril",cat:"entrenamiento",views:1216,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Lucia Rodriguez",tier:"BASE",sede:"Almagro",mail:"Luciaisabelrodriguez20@gmail.com",ig:"https://www.instagram.com/lurfitt",inicio:"2025-04-01",reels:[{mes:"Abril",cat:"instalaciones",views:3960,link:""},{mes:"Abril",cat:"entrenamiento",views:4342,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Candela Malacalza",tier:"BASE",sede:"Almagro",mail:"candemalacalza@gmail.com",ig:"https://www.instagram.com/candemalacalza",inicio:"2025-04-01",reels:[{mes:"Abril",cat:"instalaciones",views:1480,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Rocio Helguero",tier:"BASE",sede:"Almagro",mail:"rociohelguero2023@gmail.com",ig:"https://www.instagram.com/Roohelguero",inicio:"2025-04-01",reels:[{mes:"Abril",cat:"entrenam + cafe",views:4240,link:""},{mes:"Mayo",cat:"entrenar en grupo",views:5518,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Tomas Eroles",tier:"BASE",sede:"Almagro",mail:"tomasldm23@gmail.com",ig:"https://www.instagram.com/tomas.eroless",inicio:"2025-04-01",reels:[{mes:"Abril",cat:"entrenamiento",views:5829,link:""},{mes:"Abril",cat:"entrenamiento",views:1450,link:""},{mes:"Mayo",cat:"cafe",views:1267,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Karenina Cancellier",tier:"BASE",sede:"Congreso",mail:"kareninasaur@icloud.co",ig:"https://www.instagram.com/kareninacancellier",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"entrenamiento",views:2081,link:""},{mes:"Marzo",cat:"spa",views:9653,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Ornella Ottonello",tier:"BASE",sede:"Almagro",mail:"ottonello9ornella@gmail.com",ig:"https://www.instagram.com/ornellaottonello",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"entrenam + cafe",views:1003,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Vanessa Contreras",tier:"BASE",sede:"Almagro",mail:"vane_icn@outlook.com",ig:"https://www.instagram.com/vans_contreras/",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"entrenamiento",views:2217,link:""},{mes:"Marzo",cat:"entrenam + cafe",views:1803,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Veronica Chayan",tier:"BASE",sede:"Ituzaingó",mail:"Verito.fit.ok@gmail.com",ig:"https://www.instagram.com/verito.fit.ok",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"entrenamiento",views:1257,link:""},{mes:"Marzo",cat:"entrenam + clases",views:864,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Daniela Velazquez",tier:"BASE",sede:"Ituzaingó",mail:"Dinavoficial@gmail.com",ig:"https://www.instagram.com/dinavoficial",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"clases",views:2297,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Bianca Torres",tier:"BASE",sede:"Ituzaingó",mail:"biantraining@gmail.com",ig:"https://www.instagram.com/bian__torres",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"clases",views:17200,link:""}],eventos:"CARRERA ITUZAINGO",contenido:"",seguimientos:[]},
+  {name:"Camila Barreto",tier:"BASE",sede:"Congreso",mail:"cabarreto1996@gmail.com",ig:"https://www.instagram.com/domilalol",inicio:"2025-03-01",reels:[{mes:"Marzo",cat:"entrenam + spa",views:655,link:""}],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Erwuin Useche",tier:"BASE",sede:"Almagro",mail:"Erwuinusecheg@gmail.com",ig:"https://www.instagram.com/erwuinuseche",inicio:"2025-03-01",reels:[],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Amanda Vieira",tier:"BASE",sede:"Congreso y Almagro",mail:"amanndavs17@gmail.com",ig:"https://www.instagram.com/amanndavs",inicio:"2025-03-01",reels:[],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Jasmin Rojas Canchi",tier:"BASE",sede:"Almagro",mail:"Canchijasmin@gmail.com",ig:"https://www.instagram.com/jas_rojass/",inicio:"2025-03-01",reels:[],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Aldana Katiuska",tier:"BASE",sede:"Almagro",mail:"aldana_900@hotmail.com",ig:"https://www.instagram.com/kathyfit_",inicio:"2025-03-01",reels:[],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Alberto Chacare",tier:"BASE",sede:"Almagro",mail:"albertochacare@gmail.com",ig:"https://www.instagram.com/albertochacare",inicio:"2025-03-01",reels:[],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Luca Solucci",tier:"TEAM CIMA",sede:"",mail:"Lucasolucci333@gmail.com",ig:"",inicio:"2025-01-01",reels:[],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Nicolás Della Mestra",tier:"TEAM CIMA",sede:"",mail:"Nicoprepaf@hotmail.com",ig:"",inicio:"2025-01-01",reels:[],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Jorge Toledo",tier:"TEAM CIMA",sede:"",mail:"Toledo2224@gmail.com",ig:"",inicio:"2025-01-01",reels:[],eventos:"",contenido:"",seguimientos:[]},
+  {name:"Mercedes Manfredi",tier:"TEAM CIMA",sede:"",mail:"mechimanfredi@icloud.com",ig:"",inicio:"2025-01-01",reels:[],eventos:"",contenido:"",seguimientos:[]},
+];
+
+const TEMPLATES=[
+  {key:"primer-aviso",label:"1° Aviso",tipo:"aviso",texto:`Hola [NOMBRE] 👋\n\nTe escribo desde la campaña MECCA. Notamos que este mes todavía no cargaste tu reel en la plataforma.\n\nComo creador/a [TIER], tu compromiso contractual es subir [CANTIDAD] reel(es) por mes.\n\nQuedás debiéndonos 1 reel de [MES]. Podés mandarnos el link cuando lo tengas 🙌\n\nCualquier duda estamos acá.`},
+  {key:"segundo-aviso",label:"2° Aviso / Urgente",tipo:"urgente",texto:`Hola [NOMBRE],\n\nTe mandamos un segundo aviso porque aún no recibimos el contenido de [MES].\n\nTu contrato exige [CANTIDAD] reel(es) por mes. Llevás [N_MESES_DEUDA] mes(es) sin cumplir.\n\nNecesitamos que nos pases el link antes del 25 de este mes, de lo contrario vamos a tener que tomar una decisión sobre tu continuidad.\n\nGracias por entender.`},
+  {key:"ultimo-aviso",label:"Último Aviso",tipo:"urgente",texto:`Hola [NOMBRE].\n\nEste es nuestro último aviso.\n\nNo recibimos el contenido comprometido de los últimos [N_MESES_DEUDA] mes(es). Tu lugar en la campaña requiere [CANTIDAD] reel(es) mensual(es) como mínimo.\n\nSi no recibimos al menos 1 reel antes del 25, procedemos a darte de baja.\n\nEsperamos tu respuesta.`},
+  {key:"baja",label:"Comunicar Baja",tipo:"urgente",texto:`Hola [NOMBRE],\n\nDespués de varios avisos sin contenido de tu parte, hemos decidido darte de baja de la campaña MECCA.\n\nValoramos el tiempo que fuiste parte del equipo. Si en el futuro la situación cambia, con gusto lo hablamos.\n\nSaludos.`},
+  {key:"felicitacion",label:"Felicitación",tipo:"positivo",texto:`Hola [NOMBRE] 🔥\n\nQueríamos escribirte para felicitarte: tu último reel fue un golazo. [VIEWS] views es un resultado increíble.\n\nEstamos muy contentos con tu trabajo. Seguí así que te vamos a dar más oportunidades con marcas 💪`},
+  {key:"stats-marca",label:"Stats para Marca",tipo:"info",texto:`REPORTE DE CREADOR — MECCA\n━━━━━━━━━━━━━━━━━━━━\n\nCreador: [NOMBRE]\nTier: [TIER]\nInstagram: [IG]\n\nPERFORMANCE [MES]:\n• Reels: [N_REELS]\n• Views totales: [VIEWS_TOTAL]\n• Promedio/reel: [AVG_VIEWS]\n• Mejor reel: [MEJOR_REEL] ([MEJOR_VIEWS] views)\n\n━━━━━━━━━━━━━━━━━━━━\nMECCA Creators`},
+];
+
+let tierFilter="ALL", sedeFilter="ALL", tableFilters={}, activeMesFilter=MES_ACTUAL, activeTmpl=0, tmplCreator=null;
+
+function mesIdx(m){return MESES_ORDER.indexOf(m);}
+function mesFromInicio(i){if(!i)return"Marzo";const m=parseInt(i.split("-")[1])-1;return MESES_ORDER[m];}
+function getActiveMeses(c){const si=mesIdx(mesFromInicio(c.inicio)),ci=mesIdx(MES_ACTUAL),r=[];for(let i=si;i<=ci;i++)r.push(MESES_ORDER[i]);return r;}
+function reelsPorMes(c,mes){return c.reels.filter(r=>r.mes===mes&&(r.views||r.link));}
+function requisito(c){return c.tier==="BASE"?2:c.tier==="TEAM CIMA"?0:1;}
+function totalViews(c){return c.reels.reduce((a,r)=>a+(r.views||0),0);}
+function reelCount(c){return c.reels.filter(r=>r.link||r.views).length;}
+function avgViews(c){const rc=reelCount(c);return rc?Math.round(totalViews(c)/rc):0;}
+function fmtV(v){if(!v)return"—";if(v>=1000000)return(v/1000000).toFixed(1)+"M";if(v>=1000)return(v/1000).toFixed(0)+"K";return v.toString();}
+function fmtDate(d){if(!d)return"—";const p=d.split("-");if(p.length!==3)return d;return`${p[2]}/${p[1]}/${p[0]}`;}
+function lastFollowup(c){if(!c.seguimientos||!c.seguimientos.length)return null;return[...c.seguimientos].sort((a,b)=>b.fecha.localeCompare(a.fecha))[0];}
+function daysSinceFollowup(c){const lf=lastFollowup(c);if(!lf)return 999;const d=new Date(lf.fecha),now=new Date("2025-05-14");return Math.floor((now-d)/(1000*60*60*24));}
+
+function contractStatusForMes(c,mes){
+  if(c.tier==="TEAM CIMA")return{status:"nodata",label:"N/A",done:0,req:0};
+  const req=requisito(c),done=reelsPorMes(c,mes).length;
+  const startMes=mesFromInicio(c.inicio);
+  if(mesIdx(mes)<mesIdx(startMes))return{status:"nodata",label:"Antes de inicio",done:0,req:0};
+  if(mes===MES_ACTUAL)return done>=req?{status:"ok",label:`${done}/${req} ✓`,done,req}:{status:"warn",label:`${done}/${req} en curso`,done,req};
+  if(done>=req)return{status:"ok",label:`${done}/${req} ✓`,done,req};
+  return{status:"breach",label:`${done}/${req} ❌`,done,req};
+}
+
+function contractStatus(c){
+  if(c.tier==="TEAM CIMA")return{status:"nodata",label:"Sin req."};
+  const meses=getActiveMeses(c).filter(m=>m!==MES_ACTUAL);
+  if(!meses.length)return{status:"new",label:"Nuevo"};
+  const b=meses.filter(m=>contractStatusForMes(c,m).status==="breach");
+  if(!b.length)return{status:"ok",label:"Al día"};
+  if(b.length===1)return{status:"warn",label:`Debe 1 mes`};
+  return{status:"breach",label:`Debe ${b.length} meses`};
+}
+
+function nav(el){
+  document.querySelectorAll(".nitem[data-view]").forEach(x=>x.classList.remove("active"));
+  el.classList.add("active");
+  const v=el.dataset.view;
+  document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));
+  document.getElementById("view-"+v).classList.add("active");
+  if(v==="creators")renderTable();
+  if(v==="contrato")renderContrato();
+  if(v==="seguimiento")renderSeguimiento();
+  if(v==="decisiones")renderDecisiones();
+  if(v==="ranking")renderRanking();
+}
+function setTier(t){tierFilter=t;renderTable();renderDecisiones();}
+function setSede(s){sedeFilter=s;renderTable();}
+function toggleFilter(k){tableFilters[k]=!tableFilters[k];document.getElementById("fb-"+k)?.classList.toggle("active",tableFilters[k]);renderTable();}
+function close1(id){document.getElementById(id).classList.remove("open");}
+function closeOverlay(e,id){if(e.target===document.getElementById(id))close1(id);}
+
+function renderStats(){
+  const tv=creators.reduce((a,c)=>a+totalViews(c),0);
+  const active=creators.filter(c=>reelCount(c)>0).length;
+  const breached=creators.filter(c=>contractStatus(c).status==="breach").length;
+  const nofu=creators.filter(c=>daysSinceFollowup(c)>14&&c.tier!=="TEAM CIMA").length;
+  const top=[...creators].sort((a,b)=>totalViews(b)-totalViews(a))[0];
+  document.getElementById("stats-row").innerHTML=`
+    <div class="scard"><div class="scard-label">Total Views</div><div class="scard-val" style="color:var(--accent)">${fmtV(tv)}</div><div class="scard-sub">Todos los reels</div></div>
+    <div class="scard"><div class="scard-label">Activos</div><div class="scard-val" style="color:var(--accent3)">${active}</div><div class="scard-sub">Con al menos 1 reel</div></div>
+    <div class="scard"><div class="scard-label">Incumplimiento</div><div class="scard-val" style="color:var(--accent2)">${breached}</div><div class="scard-sub">Deben reels de meses pasados</div></div>
+    <div class="scard"><div class="scard-label">Sin Seguimiento</div><div class="scard-val" style="color:var(--golden)">${nofu}</div><div class="scard-sub">+14 días sin contacto</div></div>
+    <div class="scard"><div class="scard-label">MVP</div><div class="scard-val" style="color:var(--golden);font-size:22px;">${top?.name.split(" ")[0]||"—"}</div><div class="scard-sub">${fmtV(totalViews(top))} views</div></div>
+  `;
+  document.getElementById("nb-breach").textContent=breached;
+  document.getElementById("nb-dec").textContent=breached;
+}
+
+function renderDashboard(){
+  renderStats();
+  const mv=Math.max(...creators.map(totalViews),1);
+  const top6=[...creators].filter(c=>totalViews(c)>0).sort((a,b)=>totalViews(b)-totalViews(a)).slice(0,6);
+  document.getElementById("dash-top").innerHTML=top6.map(c=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;" onclick="openModal('${c.name}')">
+      <span class="badge badge-${c.tier.replace(" CIMA","CIMA")}">${c.tier}</span>
+      <span style="flex:1;font-size:12px;font-weight:500;">${c.name}</span>
+      <div class="vbar"><div class="btrack"><div class="bfill" style="width:${Math.round(totalViews(c)/mv*100)}%"></div></div><span class="vnum">${fmtV(totalViews(c))}</span></div>
+    </div>`).join("");
+  const breach=creators.filter(c=>contractStatus(c).status==="breach").slice(0,6);
+  document.getElementById("dash-breach").innerHTML=breach.length?breach.map(c=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;" onclick="openModal('${c.name}')">
+      <span class="badge badge-${c.tier.replace(" CIMA","CIMA")}">${c.tier}</span>
+      <span style="flex:1;font-size:12px;">${c.name}</span>
+      <span class="cstatus breach" style="font-size:9px;">${contractStatus(c).label}</span>
+    </div>`).join(""):`<div style="color:var(--muted);font-size:12px;padding-top:8px;">✅ Todos al día</div>`;
+  const nofu=[...creators].filter(c=>c.tier!=="TEAM CIMA").sort((a,b)=>daysSinceFollowup(b)-daysSinceFollowup(a)).slice(0,6);
+  document.getElementById("dash-followup").innerHTML=nofu.map(c=>{
+    const lf=lastFollowup(c),days=daysSinceFollowup(c);
+    return`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;" onclick="openModal('${c.name}')">
+      <span style="flex:1;font-size:12px;">${c.name}</span>
+      <span style="font-family:'DM Mono';font-size:10px;color:${days>21?"var(--accent2)":days>14?"var(--golden)":"var(--muted)"};">${lf?fmtDate(lf.fecha):"Nunca"}</span>
+    </div>`;
+  }).join("");
+}
+
+function filteredCreators(){
+  return creators.filter(c=>{
+    if(tierFilter!=="ALL"&&c.tier!==tierFilter)return false;
+    if(sedeFilter!=="ALL"&&!c.sede.includes(sedeFilter))return false;
+    const q=document.getElementById("srch")?.value?.toLowerCase()||"";
+    if(q&&!c.name.toLowerCase().includes(q))return false;
+    if(tableFilters.breach&&contractStatus(c).status!=="breach")return false;
+    if(tableFilters.nofu&&daysSinceFollowup(c)<=14)return false;
+    return true;
+  });
+}
+
+function renderTable(){
+  const sort=document.getElementById("sort")?.value||"views_desc";
+  const list=[...filteredCreators()].sort((a,b)=>{
+    if(sort==="views_desc")return totalViews(b)-totalViews(a);
+    if(sort==="views_asc")return totalViews(a)-totalViews(b);
+    if(sort==="name_asc")return a.name.localeCompare(b.name);
+    if(sort==="reels_desc")return reelCount(b)-reelCount(a);
+    if(sort==="inicio_asc")return a.inicio.localeCompare(b.inicio);
+    return 0;
+  });
+  const mv=Math.max(...creators.map(totalViews),1);
+  document.getElementById("tbody").innerHTML=list.map((c,i)=>{
+    const tv=totalViews(c),cs=contractStatus(c),lf=lastFollowup(c),days=daysSinceFollowup(c);
+    const pct=Math.round(tv/mv*100);
+    const fuColor=days>21?"var(--accent2)":days>14?"var(--golden)":"var(--muted)";
+    return`<tr onclick="openModal('${c.name}')">
+      <td style="color:var(--muted2);font-family:'DM Mono';font-size:10px;">${i+1}</td>
+      <td style="font-weight:500;font-size:12px;">${c.name}</td>
+      <td><span class="badge badge-${c.tier.replace(" CIMA","CIMA")}">${c.tier}</span></td>
+      <td style="font-size:10px;color:var(--muted)">${c.sede||"—"}</td>
+      <td style="font-family:'DM Mono';font-size:10px;color:var(--muted);">${c.inicio?c.inicio.substring(5):"?"}</td>
+      <td><span class="cstatus ${cs.status}">${cs.label}</span></td>
+      <td style="font-family:'DM Mono';font-size:10px;color:${fuColor};">${lf?fmtDate(lf.fecha):"—"}</td>
+      <td><div class="vbar"><div class="btrack"><div class="bfill ${pct<33?"low":pct<66?"mid":""}" style="width:${pct}%"></div></div><span class="vnum">${fmtV(tv)}</span></div></td>
+      <td><span class="score ${avgViews(c)>10000?"high":avgViews(c)>3000?"mid":avgViews(c)>0?"low":"zero"}">${avgViews(c)>0?fmtV(avgViews(c)):"—"}</span></td>
+      <td>${c.ig?`<a href="${c.ig}" target="_blank" onclick="event.stopPropagation()" style="color:var(--muted);font-size:11px;text-decoration:none;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'">↗</a>`:"—"}</td>
+    </tr>`;
+  }).join("");
+}
+
+function renderContrato(){
+  const meses=["Marzo","Abril","Mayo"];
+  document.getElementById("contrato-pills").innerHTML=meses.map(m=>`<div class="mpill ${m===activeMesFilter?"active":""}" onclick="activeMesFilter='${m}';renderContrato()">${m}</div>`).join("");
+  const eligible=creators.filter(c=>c.tier!=="TEAM CIMA");
+  const forMes=eligible.map(c=>({c,st:contractStatusForMes(c,activeMesFilter)}));
+  const breach=forMes.filter(x=>x.st.status==="breach");
+  const warn=forMes.filter(x=>x.st.status==="warn");
+  const ok=forMes.filter(x=>x.st.status==="ok");
+  const nodata=forMes.filter(x=>x.st.status==="nodata");
+  function grp(title,items){
+    if(!items.length)return"";
+    return`<div style="margin-bottom:20px;"><div class="msec" style="margin-top:0;">${title} (${items.length})</div>
+      <div class="twrap"><table class="dtable"><thead><tr><th>Creador</th><th>Tier</th><th>Reels</th><th>Req.</th><th>Estado</th><th>Último FU</th></tr></thead>
+      <tbody>${items.map(({c,st})=>`<tr onclick="openModal('${c.name}')" style="cursor:pointer;">
+        <td style="font-size:12px;font-weight:500;">${c.name}</td>
+        <td><span class="badge badge-${c.tier.replace(" CIMA","CIMA")}">${c.tier}</span></td>
+        <td style="font-family:'DM Mono';font-size:11px;">${st.done}</td>
+        <td style="font-family:'DM Mono';font-size:11px;">${st.req}</td>
+        <td><span class="cstatus ${st.status}">${st.label}</span></td>
+        <td style="font-family:'DM Mono';font-size:10px;color:var(--muted);">${lastFollowup(c)?fmtDate(lastFollowup(c).fecha):"—"}</td>
+      </tr>`).join("")}</tbody></table></div></div>`;
+  }
+  document.getElementById("contrato-body").innerHTML=grp("❌ Incumplimiento",breach)+grp("⏳ En curso (mes actual)",warn)+grp("✅ Cumplieron",ok)+grp("⚪ No aplica",nodata);
+}
+
+function renderSeguimiento(){
+  const q=document.getElementById("fu-srch")?.value?.toLowerCase()||"";
+  const tf=document.getElementById("fu-filter")?.value||"ALL";
+  let all=[];
+  creators.forEach(c=>(c.seguimientos||[]).forEach(s=>all.push({...s,creador:c.name,tier:c.tier})));
+  all.sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  if(q)all=all.filter(s=>s.creador.toLowerCase().includes(q));
+  if(tf!=="ALL")all=all.filter(s=>s.tipo===tf);
+  document.getElementById("seguimiento-body").innerHTML=!all.length?`<div style="color:var(--muted);font-size:13px;padding:20px 0;">Sin seguimientos registrados.</div>`:
+    `<div class="fulog">${all.map(s=>`<div class="fuentry"><div class="fudate">${fmtDate(s.fecha)}</div>
+      <div style="flex:1;"><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;"><span style="font-weight:500;font-size:12px;cursor:pointer;" onclick="openModal('${s.creador}')">${s.creador}</span><span class="badge badge-${s.tier.replace(" CIMA","CIMA")}">${s.tier}</span><span class="futag ${s.tipo}">${s.tipo}</span></div>
+      <div style="font-size:12px;color:var(--muted);">${s.nota||"—"}</div></div></div>`).join("")}</div>`;
+}
+
+function renderDecisiones(){
+  const eligible=creators.filter(c=>c.tier!=="TEAM CIMA"&&(tierFilter==="ALL"||c.tier===tierFilter));
+  const despedir=eligible.filter(c=>{const m=getActiveMeses(c).filter(x=>x!==MES_ACTUAL);return m.filter(x=>contractStatusForMes(c,x).status==="breach").length>=2;});
+  const urgente=eligible.filter(c=>{if(despedir.includes(c))return false;const m=getActiveMeses(c).filter(x=>x!==MES_ACTUAL);return m.filter(x=>contractStatusForMes(c,x).status==="breach").length===1&&daysSinceFollowup(c)>7;});
+  const avisar=eligible.filter(c=>{if(despedir.includes(c)||urgente.includes(c))return false;const m=getActiveMeses(c).filter(x=>x!==MES_ACTUAL);return m.filter(x=>contractStatusForMes(c,x).status==="breach").length===1;});
+  const escalar=eligible.filter(c=>totalViews(c)>20000).sort((a,b)=>totalViews(b)-totalViews(a));
+  const sinFU=eligible.filter(c=>!despedir.includes(c)&&!urgente.includes(c)&&daysSinceFollowup(c)>14);
+
+  function sec(icon,title,cls,items,extra){
+    if(!items.length)return"";
+    return`<div class="dbox ${cls}"><div class="dlabel">${icon} ${title} (${items.length})</div>
+      <div style="margin-top:12px;display:flex;flex-direction:column;gap:4px;">
+        ${items.map(c=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;" onclick="openModal('${c.name}')">
+          <span class="badge badge-${c.tier.replace(" CIMA","CIMA")}">${c.tier}</span>
+          <span style="flex:1;font-size:12px;font-weight:500;">${c.name}</span>
+          ${extra(c)}
+          <button class="btn btn-outline" style="font-size:10px;padding:3px 8px;" onclick="event.stopPropagation();openAddFollowup('${c.name}')">+ FU</button>
+        </div>`).join("")}
+      </div></div>`;
+  }
+
+  document.getElementById("decisiones-body").innerHTML=
+    sec("🚨","DESPEDIR — 2+ meses de incumplimiento","breach",despedir,c=>{
+      const m=getActiveMeses(c).filter(x=>x!==MES_ACTUAL).filter(x=>contractStatusForMes(c,x).status==="breach");
+      return`<span style="font-family:'DM Mono';font-size:10px;color:var(--accent2);">Debe: ${m.join(", ")}</span>`;
+    })+
+    sec("⚠️","AVISAR URGENTE — 1 mes sin respuesta","warn",urgente,c=>{
+      const lf=lastFollowup(c);return`<span style="font-family:'DM Mono';font-size:10px;color:var(--golden);">FU: ${lf?fmtDate(lf.fecha):"Nunca"}</span>`;
+    })+
+    sec("📨","PRIMER AVISO — Deben 1 mes","ok",avisar,c=>{
+      const m=getActiveMeses(c).filter(x=>x!==MES_ACTUAL).filter(x=>contractStatusForMes(c,x).status==="breach");
+      return`<span style="font-family:'DM Mono';font-size:10px;color:var(--accent3);">Debe: ${m.join(", ")}</span>`;
+    })+
+    sec("📭","SIN SEGUIMIENTO +14 DÍAS","ok",sinFU,c=>{
+      const d=daysSinceFollowup(c);return`<span style="font-family:'DM Mono';font-size:10px;color:var(--muted);">${d===999?"Nunca":d+"d sin contacto"}</span>`;
+    })+
+    sec("🔥","ESCALAR A MARCAS","fire",escalar,c=>`<span style="font-family:'DM Mono';font-size:10px;color:var(--accent);">${fmtV(totalViews(c))}</span>`);
+}
+
+function renderRanking(){
+  const top9=[...creators].filter(c=>totalViews(c)>0).sort((a,b)=>totalViews(b)-totalViews(a)).slice(0,9);
+  document.getElementById("rkgrid").innerHTML=top9.map((c,i)=>`
+    <div class="rkcard" onclick="openModal('${c.name}')"><div class="rknm">${i+1}</div>
+      <div style="font-weight:500;font-size:13px;margin-bottom:3px;">${c.name}</div>
+      <span class="badge badge-${c.tier.replace(" CIMA","CIMA")}">${c.tier}</span>
+      <div style="font-family:'Bebas Neue';font-size:28px;color:var(--accent);margin-top:8px;">${fmtV(totalViews(c))}</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px;">${reelCount(c)} reels · ${c.sede||"?"}</div>
+    </div>`).join("");
+  const tiers=["GOLDEN","TOP","BASE","TEAM CIMA"];
+  document.getElementById("tier-breakdown").innerHTML=`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+    ${tiers.map(t=>{const l=creators.filter(c=>c.tier===t),tv=l.reduce((a,c)=>a+totalViews(c),0),act=l.filter(c=>reelCount(c)>0).length;
+    return`<div class="rkcard"><div style="font-weight:500;margin-bottom:6px;">${t}</div><span class="badge badge-${t.replace(" CIMA","CIMA")}">${l.length} creadores</span>
+      <div style="font-family:'DM Mono';font-size:11px;color:var(--muted);margin-top:8px;">${fmtV(tv)} views</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px;">${act}/${l.length} activos</div></div>`;}).join("")}
+  </div>`;
+}
+
+function openModal(name){
+  const c=creators.find(x=>x.name===name);if(!c)return;
+  const cs=contractStatus(c);
+  const meses=["Marzo","Abril","Mayo"];
+  const mesesPasados=getActiveMeses(c).filter(m=>m!==MES_ACTUAL);
+  const breachedMeses=mesesPasados.filter(m=>contractStatusForMes(c,m).status==="breach");
+  let banner="";
+  if(breachedMeses.length>=2)banner=`<div class="alert-banner breach">🚨 <strong>ACCIÓN: DESPEDIR</strong> — Incumplimiento en ${breachedMeses.join(", ")}. Mandar plantilla de baja o último aviso.</div>`;
+  else if(breachedMeses.length===1)banner=`<div class="alert-banner warn">⚠️ <strong>AVISAR</strong> — Debe 1 reel de ${breachedMeses[0]}. Mandar plantilla de aviso.</div>`;
+  else if(cs.status==="ok"&&reelCount(c)>0)banner=`<div class="alert-banner ok">✅ Al día con el contrato.</div>`;
+  const contractTable=meses.map(m=>{
+    if(c.tier==="TEAM CIMA")return"";
+    const st=contractStatusForMes(c,m);
+    if(st.status==="nodata")return`<tr><td style="color:var(--muted2);font-size:11px;">${m}</td><td colspan="3" style="color:var(--muted2);font-size:10px;">No aplica</td></tr>`;
+    return`<tr><td style="font-size:11px;">${m}</td><td style="font-family:'DM Mono';font-size:11px;">${st.done}</td><td style="font-family:'DM Mono';font-size:11px;">${st.req}</td><td><span class="cstatus ${st.status}" style="font-size:9px;">${st.label}</span></td></tr>`;
+  }).join("");
+  const reelsCards=c.reels.filter(r=>r.views||r.link).map(r=>`<div class="rcard"><div class="rmonth">${r.mes}</div><div class="rviews">${fmtV(r.views)||"?"}</div><div class="rcat">${r.cat}</div>${r.link?`<a class="rlink" href="${r.link}" target="_blank">Ver reel ↗</a>`:""}</div>`).join("")||`<div style="color:var(--muted);font-size:12px;grid-column:span 3;">Sin reels.</div>`;
+  const fuLog=(c.seguimientos||[]).length?[...c.seguimientos].sort((a,b)=>b.fecha.localeCompare(a.fecha)).map(s=>`<div class="fuentry"><div class="fudate">${fmtDate(s.fecha)}</div><div style="flex:1;"><span class="futag ${s.tipo}">${s.tipo}</span><div style="font-size:12px;color:var(--muted);margin-top:4px;">${s.nota||"—"}</div></div></div>`).join(""):`<div style="color:var(--muted);font-size:12px;">Sin seguimientos.</div>`;
+
+  document.getElementById("modal-body").innerHTML=`
+    <div class="mhead">
+      <div><div class="mname">${c.name}</div><span class="badge badge-${c.tier.replace(" CIMA","CIMA")}">${c.tier}</span></div>
+      <button class="xbtn" onclick="close1('modal-overlay')">✕</button>
+    </div>
+    <div class="mmeta">
+      ${c.sede?`<span class="mchip">📍 ${c.sede}</span>`:""}
+      ${c.inicio?`<span class="mchip">📅 Inicio: ${fmtDate(c.inicio)}</span>`:""}
+      ${c.mail?`<span class="mchip">✉ ${c.mail}</span>`:""}
+      ${c.ig?`<span class="mchip"><a href="${c.ig}" target="_blank">↗ Instagram</a></span>`:""}
+      ${c.eventos?`<span class="mchip">🏃 ${c.eventos}</span>`:""}
+      ${c.contenido?`<span class="mchip"><a href="${c.contenido}" target="_blank">📁 Drive</a></span>`:""}
+    </div>
+    ${banner}
+    <div class="cinfo-row">
+      <div class="cinfocard"><div class="cinfolabel">Total Views</div><div style="font-family:'Bebas Neue';font-size:26px;color:var(--accent);">${fmtV(totalViews(c))||"—"}</div></div>
+      <div class="cinfocard"><div class="cinfolabel">Reels</div><div style="font-family:'Bebas Neue';font-size:26px;">${reelCount(c)}</div></div>
+      <div class="cinfocard"><div class="cinfolabel">Avg / Reel</div><div style="font-family:'Bebas Neue';font-size:26px;">${fmtV(avgViews(c))||"—"}</div></div>
+      <div class="cinfocard"><div class="cinfolabel">Contrato</div><div style="margin-top:4px;"><span class="cstatus ${cs.status}">${cs.label}</span></div></div>
+    </div>
+    ${c.tier!=="TEAM CIMA"?`<div class="msec">Cumplimiento por Mes</div><div class="twrap" style="margin-bottom:4px;"><table class="dtable"><thead><tr><th>Mes</th><th>Reels</th><th>Req.</th><th>Estado</th></tr></thead><tbody>${contractTable}</tbody></table></div>`:""}
+    <div class="msec">Reels</div>
+    <div class="rgrid" style="margin-bottom:4px;">${reelsCards}</div>
+    <div class="msec">Seguimiento</div>
+    <div class="fulog" style="margin-bottom:16px;">${fuLog}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="close1('modal-overlay');openAddReel('${c.name}')">+ Reel</button>
+      <button class="btn btn-outline" onclick="openAddFollowup('${c.name}')">+ Seguimiento</button>
+      <button class="btn btn-outline" onclick="openTemplateFor('${c.name}')">📋 Plantilla</button>
+      <button class="btn btn-outline" style="color:var(--accent2);border-color:rgba(255,92,58,.3);" onclick="confirmDelete('${c.name}')">Dar de baja</button>
+    </div>
+  `;
+  document.getElementById("modal-overlay").classList.add("open");
+}
+
+function openAddReel(name){
+  const sel=document.getElementById("rc-creator");
+  sel.innerHTML=[...creators].sort((a,b)=>a.name.localeCompare(b.name)).map(c=>`<option ${c.name===name?"selected":""}>${c.name}</option>`).join("");
+  document.getElementById("reel-overlay").classList.add("open");
+}
+function submitReel(){
+  const name=document.getElementById("rc-creator").value,mes=document.getElementById("rc-month").value,link=document.getElementById("rc-link").value,cat=document.getElementById("rc-cat").value,views=parseInt(document.getElementById("rc-views").value)||0;
+  const c=creators.find(x=>x.name===name);
+  if(c){c.reels.push({mes,cat,views,link});renderAll();close1("reel-overlay");document.getElementById("rc-link").value="";document.getElementById("rc-views").value="";}
+}
+
+function openAddFollowup(name){
+  const sel=document.getElementById("fu-creator");
+  sel.innerHTML=[...creators].sort((a,b)=>a.name.localeCompare(b.name)).map(c=>`<option ${c.name===name?"selected":""}>${c.name}</option>`).join("");
+  document.getElementById("fu-fecha").value=new Date().toISOString().split("T")[0];
+  document.getElementById("fu-overlay").classList.add("open");
+}
+function submitFollowup(){
+  const name=document.getElementById("fu-creator").value,tipo=document.getElementById("fu-tipo").value,nota=document.getElementById("fu-nota").value,fecha=document.getElementById("fu-fecha").value;
+  const c=creators.find(x=>x.name===name);
+  if(c){if(!c.seguimientos)c.seguimientos=[];c.seguimientos.push({tipo,nota,fecha});renderAll();close1("fu-overlay");document.getElementById("fu-nota").value="";}
+}
+
+let activeTmplIdx=0,tmplCreatorName=null;
+function openTemplate(){tmplCreatorName=null;activeTmplIdx=0;renderTemplate();document.getElementById("tmpl-overlay").classList.add("open");}
+function openTemplateFor(name){tmplCreatorName=name;activeTmplIdx=0;renderTemplate();document.getElementById("tmpl-overlay").classList.add("open");}
+function renderTemplate(){
+  document.getElementById("tmpl-tabs").innerHTML=TEMPLATES.map((t,i)=>`<div class="ptab ${i===activeTmplIdx?"active":""}" onclick="activeTmplIdx=${i};renderTemplate()">${t.label}</div>`).join("");
+  const t=TEMPLATES[activeTmplIdx];
+  const c=tmplCreatorName?creators.find(x=>x.name===tmplCreatorName):null;
+  let txt=t.texto;
+  if(c){
+    const req=requisito(c),mesesB=getActiveMeses(c).filter(m=>m!==MES_ACTUAL).filter(m=>contractStatusForMes(c,m).status==="breach");
+    const bestReel=c.reels.length?[...c.reels].sort((a,b)=>(b.views||0)-(a.views||0))[0]:null;
+    txt=txt.replace(/\[NOMBRE\]/g,c.name.split(" ")[0]).replace(/\[TIER\]/g,c.tier).replace(/\[IG\]/g,c.ig||"—")
+      .replace(/\[CANTIDAD\]/g,req).replace(/\[MES\]/g,mesesB[0]||MES_ACTUAL).replace(/\[N_MESES_DEUDA\]/g,mesesB.length||1)
+      .replace(/\[VIEWS\]/g,fmtV(totalViews(c))).replace(/\[N_REELS\]/g,reelCount(c)).replace(/\[VIEWS_TOTAL\]/g,fmtV(totalViews(c)))
+      .replace(/\[AVG_VIEWS\]/g,fmtV(avgViews(c))).replace(/\[MEJOR_REEL\]/g,bestReel?.cat||"—").replace(/\[MEJOR_VIEWS\]/g,fmtV(bestReel?.views||0));
+  }
+  document.getElementById("tmpl-body").innerHTML=`
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">Tipo: <span class="futag ${t.tipo}">${t.tipo}</span>${c?` · Para: <strong>${c.name}</strong>`:""}</div>
+    <div class="tmpl-box"><button class="copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('tmpl-txt').textContent).then(()=>{this.textContent='✓ Copiado';setTimeout(()=>this.textContent='Copiar',1500)})">Copiar</button><div id="tmpl-txt">${txt}</div></div>
+    ${!c?`<div style="font-size:11px;color:var(--muted);margin-top:12px;">💡 Desde el perfil de un creador, usá el botón "Plantilla" para autocompletar sus datos.</div>`:""}
+  `;
+}
+
+function confirmDelete(name){
+  if(confirm(`¿Dar de baja a ${name}?`)){creators=creators.filter(c=>c.name!==name);close1("modal-overlay");renderAll();}
+}
+
+function renderAll(){
+  renderStats();renderDashboard();
+
+const USERS={"nacho":"mecca2025","mecca":"club2025","jhose":"cima2025"};
+const NAMES={"nacho":"Nacho","mecca":"MECCA","jhose":"Jhose"};
+function doLogin(){const u=document.getElementById("l-user").value.trim().toLowerCase(),p=document.getElementById("l-pass").value;if(USERS[u]&&USERS[u]===p){document.getElementById("login-screen").style.display="none";document.getElementById("login-welcome").textContent="Bienvenido, "+NAMES[u];}else{document.getElementById("login-err").classList.add("show");document.getElementById("l-pass").value="";}}
+document.addEventListener("DOMContentLoaded",()=>{document.getElementById("l-user").focus();});
+  if(document.getElementById("view-creators").classList.contains("active"))renderTable();
+  if(document.getElementById("view-contrato").classList.contains("active"))renderContrato();
+  if(document.getElementById("view-seguimiento").classList.contains("active"))renderSeguimiento();
+  if(document.getElementById("view-decisiones").classList.contains("active"))renderDecisiones();
+  if(document.getElementById("view-ranking").classList.contains("active"))renderRanking();
+  document.getElementById("hcount").textContent=creators.length+" creadores";
+}
+
+renderDashboard();
+
+const USERS={"nacho":"mecca2025","mecca":"club2025","jhose":"cima2025"};
+const NAMES={"nacho":"Nacho","mecca":"MECCA","jhose":"Jhose"};
+function doLogin(){const u=document.getElementById("l-user").value.trim().toLowerCase(),p=document.getElementById("l-pass").value;if(USERS[u]&&USERS[u]===p){document.getElementById("login-screen").style.display="none";document.getElementById("login-welcome").textContent="Bienvenido, "+NAMES[u];}else{document.getElementById("login-err").classList.add("show");document.getElementById("l-pass").value="";}}
+document.addEventListener("DOMContentLoaded",()=>{document.getElementById("l-user").focus();});
+renderStats();
+document.getElementById("hcount").textContent=creators.length+" creadores";
+</script>
+</body>
+</html>
